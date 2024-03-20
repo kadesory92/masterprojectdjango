@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
 
 
 class Student(models.Model):
+    objects = None
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -30,6 +31,7 @@ class Student(models.Model):
 
 
 class Teacher(models.Model):
+    objects = None
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -96,6 +98,7 @@ class Grade(models.Model):
 
 
 class Attendance(models.Model):
+    objects = None
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     attendance_date = models.DateField()
     # status = models.CharField(max_length=10)
