@@ -75,8 +75,8 @@
                           <td>{{ student.last_name }}</td>
                           <td>{{ student.date_of_birth }}</td>
                         <td>
-                          <a href="{% url 'student/<int:student_id>/edit' student.id %}" class="btn btn-primary">Update</a>
-                          <a href="{% url 'student/<int:student_id>/delete' student.id %}" class="btn btn-danger">Delete</a>
+                          <a href="{% url 'student/<int:pk>/edit' student.id %}" class="btn btn-primary">Update</a>
+                          <a href="{% url 'student/<int:pk>/delete' student.id %}" class="btn btn-danger">Delete</a>
                         </td>
                         {% endfor %}
                       </tr>

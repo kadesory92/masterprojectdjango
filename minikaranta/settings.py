@@ -90,8 +90,8 @@ DATABASES = {
         'NAME': 'db_minikaranta',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': 'localhost',  # ou l'adresse IP de notre serveur MySQL
-        'PORT': '',  # port MySQL par défaut
+        'HOST': 'localhost',  # or the IP address of our MySQL server
+        'PORT': '',  # default MySQL port
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
