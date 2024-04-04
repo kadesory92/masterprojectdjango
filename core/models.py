@@ -75,6 +75,7 @@ class Subject(models.Model):
 
 
 class Course(models.Model):
+    objects = None
     class_id = models.ForeignKey(StudyClass, on_delete=models.CASCADE, null=True)
     subject_id = models.ForeignKey(Subject, on_delete=models.CASCADE, null=True)
     teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
@@ -82,6 +83,7 @@ class Course(models.Model):
 
 
 class Enrollment(models.Model):
+    objects = None
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
     class_id = models.ForeignKey(StudyClass, on_delete=models.CASCADE, null=True)
     enrollment_date = models.DateField()
@@ -105,6 +107,7 @@ class Classroom(models.Model):
 
 
 class Exam(models.Model):
+    objects = None
     date_exam = models.DateField()
     coefficient = models.IntegerField()
     type_exam = models.ForeignKey('TypeExam', on_delete=models.CASCADE, null=True)
@@ -112,15 +115,18 @@ class Exam(models.Model):
 
 
 class TypeExam(models.Model):
+    objects = None
     designation = models.CharField(max_length=50)
 
 
 class TakeExam(models.Model):
+    objects = None
     mark = models.DecimalField(max_digits=5, decimal_places=2)
     exam_id = models.ForeignKey(Exam, on_delete=models.CASCADE, null=True)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
 
 
 class Teaching(models.Model):
+    objects = None
     teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     subject_id = models.ForeignKey(Subject, on_delete=models.CASCADE, null=True)

@@ -14,10 +14,65 @@
                   <h5 class="card-title">Create New Student</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit">Submit</button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>User Information</h4>
+                                <div class="form-group">
+                                    <label>{{ user_form.username.label_tag }}</label>
+                                    {{ user_form.username }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.password.label_tag }}</label>
+                                    <input type="text" name="{{ user_form.password }}" id="password" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.gender.label_tag }}</label>
+                                    {{ user_form.gender }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.role.label_tag }}</label>
+                                    {{ user_form.role }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.first_name.label_tag }}</label>
+                                    <input type="text" name="{{ user_form.first_name }}" id="first_name" class="form-control">
+<!--                                    {{ user_form.first_name }}-->
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.last_name.label_tag }}</label>
+                                    <input type="text" name="{{ user_form.last_name }}" id="last_name" class="form-control">
+<!--                                    {{ user_form.last_name }}-->
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.address.label_tag }}</label>
+                                    {{ user_form.address }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.phone_number.label_tag }}</label>
+                                    {{ user_form.phone_number }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ user_form.email.label_tag }}</label>
+                                    {{ user_form.email }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Student Information</h4>
+                                <div class="form-group">
+                                    <label></label>
+                                    {{ student_form.date_of_birth.label_tag }}
+                                    {{ student_form.date_of_birth }}
+                                </div>
+                                <div class="form-group">
+                                    <label></label>
+                                    {{ student_form.photo.label_tag }}
+                                    {{ student_form.photo }}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
                     </form>
                 </div>
 

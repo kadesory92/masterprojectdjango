@@ -3,38 +3,57 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    # path('home/', views.home, name='home'),
 
-    path('admin_dashboard', views.admin_dashboard, name="admin_dashboard"),
+    path('login/', views.login, name="login"),
+    path('logout/', views.logout_view, name="logout"),
 
-    path('dashboard/', views.dashboard, name="dashboard"),
+    path('dashboard', views.dashboard, name="dashboard"),
+    path('profile/', views.profile, name='profile'),
 
-    path('create_custom_user/', views.create_custom_user, name='create_custom_user'),
+    path('admin_dashboard/', views.admin_dashboard, name="admin_dashboard"),
+
+    # path('dashboard/', views.dashboard, name="dashboard"),
+
+    path('create_user/', views.create_user, name='create_user'),
+    path('edit_user/<int:user_id>/', views.edit_user, name="edit_user"),
+    path('update_user/<int:user_id>/', views.update_user, name="update_user"),
+    path('user/<int:user_id>/', views.user, name="user"),
+    path('delete_user/<int:user_id>/', views.delete_user, name="delete_user"),
+    path('manage_users/', views.manage_users, name='manage_users'),
     path('create_student/', views.create_student, name='create_student'),
+    path('manage_students/', views.manage_students, name="manage_students"),
     path('list_students/', views.list_students, name='list_students'),
     path('update_student/<int:student_id>/', views.update_student, name='update_student'),
-    path('delete_student/<int:student_id>/', views.delete_student, name='delete_student'),
+    path('student/<int:student_id>/edit', views.edit_student, name="edit_student"),
+    path('student/<int:student_id>/delete', views.delete_student, name='delete_student'),
 
     path('create_teacher/', views.create_teacher, name='create_teacher'),
+    path('manage_teachers/', views.manage_teachers, name='manage_teachers'),
     path('list_teachers/', views.list_teachers, name='list_teachers'),
     path('update_teacher/<int:teacher_id>/', views.update_teacher, name='update_teacher'),
     path('delete_teacher/<int:teacher_id>/', views.delete_teacher, name='delete_teacher'),
 
     path('create_parent/', views.create_parent, name='create_parent'),
+    path('manage_parents/', views.manage_parents, name='manage_parents'),
     path('list_parents/', views.list_parents, name='list_parents'),
     path('update_parent/<int:parent_id>/', views.update_parent, name='update_parent'),
     path('delete_parent/<int:parent_id>/', views.delete_parent, name='delete_parent'),
 
     path('create_study_class/', views.create_study_class, name='create_study_class'),
+    path('manage_classes/', views.manage_classes, name='manage_classes'),
     path('list_study_classes/', views.list_study_classes, name='list_study_classes'),
     path('update_study_class/<int:class_id>/', views.update_study_class, name='update_study_class'),
     path('delete_study_class/<int:class_id>/', views.delete_study_class, name='delete_study_class'),
 
     path('create_subject/', views.create_subject, name='create_subject'),
+    path('manage_subjects/', views.manage_subjects, name='manage_subjects'),
     path('list_subjects/', views.list_subjects, name='list_subjects'),
     path('update_subject/<int:subject_id>/', views.update_subject, name='update_subject'),
     path('delete_subject/<int:subject_id>/', views.delete_subject, name='delete_subject'),
 
     path('create_course/', views.create_course, name='create_course'),
+    path('manage_courses/', views.manage_courses, name='manage_courses'),
     path('list_courses/', views.list_courses, name='list_courses'),
     path('update_course/<int:course_id>/', views.update_course, name='update_course'),
     path('delete_course/<int:course_id>/', views.delete_course, name='delete_course'),

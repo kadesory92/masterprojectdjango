@@ -1,0 +1,10 @@
+.feature-block {
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+.feature-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }

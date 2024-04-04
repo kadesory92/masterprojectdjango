@@ -1,47 +1,40 @@
+from django.contrib.auth import authenticate, login as auth_login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
+
+from .decorators import role_required
 from .forms import CustomUserForm, StudentForm, TeacherForm, ParentForm, StudyClassForm, SubjectForm, CourseForm, \
     EnrollmentForm, AttendanceForm, ClassroomForm, ExamForm, TypeExamForm, TakeExamForm, TeachingForm
 from .models import Student, Teacher, Parent, StudyClass, Subject, Course, Enrollment, Attendance, \
-    Classroom, Exam, TypeExam, TakeExam, Teaching
+    Classroom, Exam, TypeExam, TakeExam, Teaching, CustomUser
 
 
 def home(request):
     return render(request, 'home.html')
 
 
+@login_required
 def dashboard(request):
     # Retrieve the role of the currently logged-in user
     user_role = request.user.role
 
-    # Define the default context
-    context = {'dashboard_content': 'Bienvenue!'}
-
     # Depending on the role, customize the dashboard content and template
     if user_role == 'admin':
-        # Administrator-specific logic and template
-        template_name = 'admin_dashboard.html'
-        context['dashboard_content'] = 'Welcome, administrator!'
+        return admin_dashboard(request)
     elif user_role == 'student':
-        # Student-specific logic and template
-        template_name = 'student_dashboard.html'
-        context['dashboard_content'] = 'Welcome, student!'
+        return student_dashboard(request)
     elif user_role == 'teacher':
-        # Teacher-specific logic and template
-        template_name = 'teacher_dashboard.html'
-        context['dashboard_content'] = 'Welcome, teacher!'
+        return teacher_dashboard(request)
     elif user_role == 'parent':
-        # Parent-specific logic and template
-        template_name = 'parent_dashboard.html'
-        context['dashboard_content'] = 'Bienvenue, parent!'
+        return parent_dashboard(request)
     else:
-        # Default logic and template
-        template_name = 'default_dashboard.html'
-
-    # Render the appropriate template with the context
-    return render(request, template_name, context)
+        # Redirect to signin if user role is not recognized
+        return redirect('login')
 
 
+@role_required('admin')
+@login_required
 def admin_dashboard(request):
     # Total number of students and teachers
     total_students = Student.objects.count()
@@ -73,83 +66,160 @@ def admin_dashboard(request):
     return render(request, 'admin/admin_dashboard.html', context)
 
 
-# View for creating a new custom user
-def create_custom_user(request):
+@role_required('teacher')
+def teacher_dashboard(request):
+    return render(request, 'teacher/teacher_dashboard.html')
+
+
+@role_required('student')
+def student_dashboard(request):
+    return render(request, 'student/student_dashboard.html')
+
+
+@role_required('parent')
+def parent_dashboard(request):
+    return render(request, 'parent/parent_dashboard.html')
+
+
+def create_user(request):
     if request.method == 'POST':
-        form = CustomUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success_url')  # Redirect to a success page
-    else:
-        form = CustomUserForm()
-    return render(request, 'custom_user_form.html', {'form': form})
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        role = request.POST.get('role')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        gender = request.POST.get('gender')
+        address = request.POST.get('address')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+        date_of_birth = request.POST.get('date_of_birth')
+        photo = request.FILES.get('photo')
+
+        # Create CustomUser instance
+        user = CustomUser.objects.create_user(username=username, password=password, role=role, first_name=first_name,
+                                              last_name=last_name, gender=gender, address=address,
+                                              phone_number=phone_number, email=email)
+
+        # Set photo field if provided
+        if photo:
+            user.photo = photo
+            user.save()
+
+        # Create role-specific user instance
+        if role == 'student':
+            Student.objects.create(user=user, date_of_birth=date_of_birth, photo=photo)
+        elif role == 'teacher':
+            Teacher.objects.create(user=user, date_of_birth=date_of_birth, photo=photo)
+        elif role == 'parent':
+            Parent.objects.create(user=user, date_of_birth=date_of_birth, photo=photo)
+
+        return redirect('admin_dashboard')  # Redirect to success page after user creation
+
+    return render(request, 'admin/user/create_user.html')
 
 
-def create_user(request, role):
-    global entity_form
+def login(request):
     if request.method == 'POST':
-        user_form = CustomUserForm(request.POST)
-        if role == 'student':
-            entity_form = StudentForm(request.POST, request.FILES)
-        elif role == 'teacher':
-            entity_form = TeacherForm(request.POST, request.FILES)
-        elif role == 'parent':
-            entity_form = ParentForm(request.POST, request.FILES)
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
-        if user_form.is_valid() and entity_form.is_valid():
-            user = user_form.save()
-            entity = entity_form.save(commit=False)
-            entity.user = user
-            entity.save()
+        # Authenticate user
+        user = authenticate(request, username=username, password=password)
 
-            # Envoi de notification par téléphone
-            # send_notification(user)
-
-            return redirect('success_url')  # Redirige vers une page de succès
+        if user is not None:
+            # User authentication successful, log in the user
+            auth_login(request, user)
+            # Redirect to a success page.
+            return redirect('home')  # Replace 'home' with the name of your home page URL
+        else:
+            # Return an 'invalid login' error message.
+            return render(request, 'auth/login.html', {'error': 'Invalid username or password'})
     else:
-        user_form = CustomUserForm()
-        if role == 'student':
-            entity_form = StudentForm()
-        elif role == 'teacher':
-            entity_form = TeacherForm()
-        elif role == 'parent':
-            entity_form = ParentForm()
-
-    return render(request, 'user_form.html', {'user_form': user_form, 'entity_form': entity_form, 'role': role})
+        return render(request, "auth/login.html")
 
 
-# def send_notification(user):
-#     # Configurez votre compte Twilio
-#     TWILIO_ACCOUNT_SID = settings.TWILIO_ACCOUNT_SID
-#     TWILIO_AUTH_TOKEN = settings.TWILIO_AUTH_TOKEN
-#     TWILIO_PHONE_NUMBER = settings.TWILIO_PHONE_NUMBER
-#
-#     message = f"Votre compte a été créé avec succès. Votre nom d'utilisateur est {user.username}."
-#     phone_number = user.phone_number
-#     if phone_number:
-#         try:
-#             # Envoyer une notification par SMS
-#             client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-#             message = client.messages.create(
-#                 body=message,
-#                 from_=TWILIO_PHONE_NUMBER,
-#                 to=phone_number
-#             )
-#         except Exception as e:
-#             # Manage sending errors de SMS
-#             print("Error when sending SMS :", e)
+@login_required()
+def profile(request):
+    # Récupérer l'utilisateur courant
+    current_user = request.user
+
+    # Access the current user's information
+    username = current_user.username
+    email = current_user.email
+    role = current_user.role  # Suppose role is a custom field in your user model.
+
+    # Use this information as you wish in your view
+
+    return render(request, 'admin/user/profile.html', {
+        'username': username,
+        'email': email,
+        'role': role,
+        # Vous pouvez ajouter d'autres informations ici si nécessaire
+    })
 
 
-# View for creating a new student
-# def create_student(request):
-#     if request.method == 'POST':
-#         form = StudentForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('success_url')  # Redirect to a success page
-#     else:
-#         form = StudentForm()
-#     return render(request, 'student_form.html', {'form': form})
+def logout_view(request):
+    logout(request)
+    # Redirect to a success page.
+    return redirect('home')  # Replace 'home' with the name of your home page URL
+
+
+@role_required('admin')
+def manage_users(request):
+    users_list = CustomUser.objects.all()
+
+    # Recherche dynamique
+    query = request.GET.get('q')
+    if query:
+        users_list = users_list.filter(username__icontains=query) | \
+                     users_list.filter(first_name__icontains=query) | \
+                     users_list.filter(last_name__icontains=query)
+
+    # Pagination
+    paginator = Paginator(users_list, 10)  # 10 utilisateurs par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "admin/user/manage_users.html", {'page_obj': page_obj, 'query': query})
+
+
+def edit_user(request, user_id):
+    return render(request, 'admin/user/edit_user.html')
+
+
+def update_user(request, user_id):
+    return render(request, 'admin/user/update_user.html')
+
+
+def user(request, user_id):
+    return render(request, 'admin/user/user.html')
+
+
+def delete_user(request, user_id):
+    return render(request, 'admin/user/delete_user.html')
+
+
+def manage_students(request):
+    return render(request, "admin/student/manage_students.html")
+
+
+def manage_teachers(request):
+    return render(request, "admin/teacher/manage_teachers.html")
+
+
+def manage_parents(request):
+    return render(request, "admin/student/manage_parents.html")
+
+
+def manage_classes(request):
+    return render(request, "admin/class/manage_classes.html")
+
+
+def manage_courses(request):
+    return render(request, "admin/course/manage_courses.html")
+
+
+def manage_subjects(request):
+    return render(request, "admin/subject/manage_subjects.html")
 
 
 def create_student(request):
@@ -165,16 +235,20 @@ def create_student(request):
             # Envoi de notification par téléphone
             # send_notification(user)
 
-            return redirect('success_url')  # Redirige vers une page de succès
+            return redirect('success_url')  # Redirects to a success page
     else:
         user_form = CustomUserForm()
         student_form = StudentForm()
-    return render(request, '/admin/student/student_form.html', {'user_form': user_form, 'student_form': student_form})
+    return render(request, 'admin/student/student_form.html', {'user_form': user_form, 'student_form': student_form})
 
 
 def list_students(request):
     students = Student.objects.all()
     return render(request, 'student_list.html', {'students': students})
+
+
+def edit_student(request, user_id):
+    return render(request, 'admin/student/edit_student.html')
 
 
 # Example view for updating a student
@@ -288,13 +362,13 @@ def create_study_class(request):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = StudyClassForm()
-    return render(request, 'studyclass_form.html', {'form': form})
+    return render(request, 'studyClass_form.html', {'form': form})
 
 
 # View for reading a list of study classes
 def list_study_classes(request):
     study_classes = StudyClass.objects.all()
-    return render(request, 'studyclass_list.html', {'study_classes': study_classes})
+    return render(request, 'studyClass_list.html', {'study_classes': study_classes})
 
 
 # View for updating a study class
@@ -307,7 +381,7 @@ def update_study_class(request, class_id):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = StudyClassForm(instance=study_class)
-    return render(request, 'studyclass_form.html', {'form': form})
+    return render(request, 'studyClass_form.html', {'form': form})
 
 
 # View for deleting a study class
@@ -316,7 +390,7 @@ def delete_study_class(request, class_id):
     if request.method == 'POST':
         study_class.delete()
         return redirect('success_url')  # Redirect to a success page
-    return render(request, 'studyclass_confirm_delete.html', {'study_class': study_class})
+    return render(request, 'studyClass_confirm_delete.html', {'study_class': study_class})
 
 
 # View for creating a new subject
@@ -568,13 +642,13 @@ def create_type_exam(request):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = TypeExamForm()
-    return render(request, 'typeexam_form.html', {'form': form})
+    return render(request, 'type_exam_form.html', {'form': form})
 
 
 # View for reading a list of exam types
 def list_type_exams(request):
     type_exams = TypeExam.objects.all()
-    return render(request, 'typeexam_list.html', {'type_exams': type_exams})
+    return render(request, 'type_exam_list.html', {'type_exams': type_exams})
 
 
 # View for updating an exam type
@@ -587,7 +661,7 @@ def update_type_exam(request, type_exam_id):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = TypeExamForm(instance=type_exam)
-    return render(request, 'typeexam_form.html', {'form': form})
+    return render(request, 'take_exam_form.html', {'form': form})
 
 
 # View for deleting an exam type
@@ -596,7 +670,7 @@ def delete_type_exam(request, type_exam_id):
     if request.method == 'POST':
         type_exam.delete()
         return redirect('success_url')  # Redirect to a success page
-    return render(request, 'typeexam_confirm_delete.html', {'type_exam': type_exam})
+    return render(request, 'type_exam_confirm_delete.html', {'type_exam': type_exam})
 
 
 # View for creating a new take exam instance
@@ -608,13 +682,13 @@ def create_take_exam(request):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = TakeExamForm()
-    return render(request, 'takeexam_form.html', {'form': form})
+    return render(request, 'take_exam_form.html', {'form': form})
 
 
 # View for reading a list of take exam instances
 def list_take_exams(request):
     take_exams = TakeExam.objects.all()
-    return render(request, 'takeexam_list.html', {'take_exams': take_exams})
+    return render(request, 'take_exam_list.html', {'take_exams': take_exams})
 
 
 # View for updating a take exam instance
@@ -627,7 +701,7 @@ def update_take_exam(request, take_exam_id):
             return redirect('success_url')  # Redirect to a success page
     else:
         form = TakeExamForm(instance=take_exam)
-    return render(request, 'takeexam_form.html', {'form': form})
+    return render(request, 'take_exam_form.html', {'form': form})
 
 
 # View for deleting a take exam instance
@@ -636,7 +710,7 @@ def delete_take_exam(request, take_exam_id):
     if request.method == 'POST':
         take_exam.delete()
         return redirect('success_url')  # Redirect to a success page
-    return render(request, 'takeexam_confirm_delete.html', {'take_exam': take_exam})
+    return render(request, 'take_exam_confirm_delete.html', {'take_exam': take_exam})
 
 
 # View for creating a new teaching instance
