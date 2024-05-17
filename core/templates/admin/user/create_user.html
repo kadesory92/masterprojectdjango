@@ -19,16 +19,16 @@
                             {% csrf_token %}
                             <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                <label for="username">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" required>
+                                <div class="form-group mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="password">Password</label>
+                                <div class="form-group mb-3">
+                                    <label for="password" class="form-label">Password</label>
                                     <input type="password" class="form-control" id="password" name="password" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="role">Role</label>
+                                <div class="form-group mb-3">
+                                    <label for="role" class="form-label">Role</label>
                                     <select class="form-control" id="role" name="role" required>
                                         <option value="admin">Admin</option>
                                         <option value="teacher">Teacher</option>
@@ -36,41 +36,41 @@
                                         <option value="parent">Parent</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="first_name">First Name</label>
+                                <div class="form-group mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
                                     <input type="text" class="form-control" id="first_name" name="first_name" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="last_name">Last Name</label>
+                                <div class="form-group mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
                                     <input type="text" class="form-control" id="last_name" name="last_name" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="photo">Photo</label>
+                                <div class="form-group mb-3">
+                                    <label for="photo" class="form-label">Photo</label>
                                     <input type="file" class="form-control" id="photo" name="photo">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                <label for="gender">Gender</label>
+                                <div class="form-group mb-3">
+                                <label for="gender" class="form-label">Gender</label>
                                 <select class="form-control" id="gender" name="gender" required>
                                     <option value="M">Male</option>
                                     <option value="F">Female</option>
                                 </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="address">Address</label>
+                                <div class="form-group mb-3">
+                                    <label for="address" class="form-label">Address</label>
                                     <textarea class="form-control" id="address" name="address"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="phone_number">Phone Number</label>
+                                <div class="form-group mb-3">
+                                    <label for="phone_number" class="form-label">Phone Number</label>
                                     <input type="text" class="form-control" id="phone_number" name="phone_number">
                                 </div>
-                                <div class="form-group">
-                                    <label for="email">Email</label>
+                                <div class="form-group mb-3">
+                                    <label for="email" class="form-label">Email</label>
                                     <input type="email" class="form-control" id="email" name="email">
                                 </div>
-                                <div class="form-group">
-                                    <label for="date_of_birth">Date of Birth</label>
+                                <div class="form-group mb-3">
+                                    <label for="date_of_birth" class="form-label">Date of Birth</label>
                                     <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
                                 </div>
                             </div>

@@ -1,0 +1,24 @@
+{% extends 'admin/master.html' %}
+
+{% block content %}
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Class Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Class Name:</strong> {{ study_class.class_name }}</p>
+                        <p><strong>Section:</strong> {{ study_class.section }}</p>
+                        <!-- Add more class details here as needed -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

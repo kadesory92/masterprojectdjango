@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -182,8 +183,71 @@ def manage_users(request):
     return render(request, "admin/user/manage_users.html", {'page_obj': page_obj, 'query': query})
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import CustomUser
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import CustomUser, Student, Teacher, Parent
+
+
 def edit_user(request, user_id):
-    return render(request, 'admin/user/edit_user.html')
+    user = get_object_or_404(CustomUser, pk=user_id)
+
+    if request.method == 'POST':
+        # Récupérer les données soumises par le formulaire
+        username = request.POST.get('username')
+        role = request.POST.get('role')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        gender = request.POST.get('gender')
+        address = request.POST.get('address')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+        date_of_birth = request.POST.get('date_of_birth')
+        photo = request.FILES.get('photo')
+
+        # Mettre à jour les données de l'utilisateur
+        user.username = username
+        user.role = role
+        user.first_name = first_name
+        user.last_name = last_name
+        user.gender = gender
+        user.address = address
+        user.phone_number = phone_number
+        user.email = email
+
+        # Set photo field if provided
+        if photo:
+            user.photo = photo
+
+        user.save()
+
+        # Mettre à jour l'instance spécifique de l'utilisateur en fonction de son rôle
+        if role == 'student':
+            student = user.student
+            if not student:
+                student = Student(user=user)
+            student.date_of_birth = date_of_birth
+            student.photo = photo
+            student.save()
+        elif role == 'teacher':
+            teacher = user.teacher
+            if not teacher:
+                teacher = Teacher(user=user)
+            teacher.date_of_birth = date_of_birth
+            teacher.photo = photo
+            teacher.save()
+        elif role == 'parent':
+            parent = user.parent
+            if not parent:
+                parent = Parent(user=user)
+            parent.date_of_birth = date_of_birth
+            parent.photo = photo
+            parent.save()
+
+        return redirect('manage_users')  # Redirige vers la page de liste des utilisateurs après l'édition
+
+    return render(request, 'admin/user/edit_user.html', {'user': user})
 
 
 def update_user(request, user_id):
@@ -195,23 +259,64 @@ def user(request, user_id):
 
 
 def delete_user(request, user_id):
-    return render(request, 'admin/user/delete_user.html')
+    user = get_object_or_404(CustomUser, pk=user_id)
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'User deleted successfully.')
+        return redirect('manage_users')  # Redirige vers la page de liste des utilisateurs
+    return render(request, 'admin/user/delete_user.html', {'user': user})
 
 
 def manage_students(request):
-    return render(request, "admin/student/manage_students.html")
+    students_list = Student.objects.all()
+
+    # Recherche dynamique
+    query = request.GET.get('q')
+    if query:
+        students_list = students_list.filter(user__username__icontains=query) | \
+                        students_list.filter(user__first_name__icontains=query) | \
+                        students_list.filter(user__last_name__icontains=query)
+
+    # Pagination
+    paginator = Paginator(students_list, 10)  # 10 étudiants par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "admin/student/manage_students.html", {'page_obj': page_obj, 'query': query})
 
 
 def manage_teachers(request):
-    return render(request, "admin/teacher/manage_teachers.html")
+    teachers_list = Teacher.objects.all()
+
+    # Recherche dynamique
+    query = request.GET.get('q')
+    if query:
+        teachers_list = teachers_list.filter(user__username__icontains=query) | \
+                        teachers_list.filter(user__first_name__icontains=query) | \
+                        teachers_list.filter(user__last_name__icontains=query)
+
+    # Pagination
+    paginator = Paginator(teachers_list, 10)  # 10 enseignants par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "admin/teacher/manage_teachers.html", {'page_obj': page_obj, 'query': query})
 
 
 def manage_parents(request):
-    return render(request, "admin/student/manage_parents.html")
+    parents_list = Parent.objects.all()
 
+    # Dynamic search
+    query = request.GET.get('q')
+    if query:
+        parents_list = parents_list.filter(user__username__icontains=query) | \
+                       parents_list.filter(user__first_name__icontains=query) | \
+                       parents_list.filter(user__last_name__icontains=query)
 
-def manage_classes(request):
-    return render(request, "admin/class/manage_classes.html")
+    # Pagination
+    paginator = Paginator(parents_list, 10)  # 10 parents per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "admin/parent/manage_parents.html", {'page_obj': page_obj, 'query': query})
 
 
 def manage_courses(request):
@@ -247,7 +352,11 @@ def list_students(request):
     return render(request, 'student_list.html', {'students': students})
 
 
-def edit_student(request, user_id):
+def show_student(request, student_id):
+    return render(request, 'admin/student/show_student.html')
+
+
+def edit_student(request, student_id):
     return render(request, 'admin/student/edit_student.html')
 
 
@@ -353,43 +462,73 @@ def delete_parent(request, parent_id):
     return render(request, 'parent_confirm_delete.html', {'parent': parent})
 
 
+def manage_classes(request):
+    classes_list = StudyClass.objects.all()
+
+    # Dynamic search
+    query = request.GET.get('q')
+    if query:
+        classes_list = classes_list.filter(class_name__icontains=query) | \
+                       classes_list.filter(section__icontains=query)
+
+    # Pagination
+    paginator = Paginator(classes_list, 10)  # 10 classes per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "admin/class/manage_classes.html", {'page_obj': page_obj, 'query': query})
+
+
 # View for creating a new study class
 def create_study_class(request):
     if request.method == 'POST':
-        form = StudyClassForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success_url')  # Redirect to a success page
-    else:
-        form = StudyClassForm()
-    return render(request, 'studyClass_form.html', {'form': form})
+        class_name = request.POST.get('class_name')
+        section = request.POST.get('section')
+
+        # Create the StudyClass object
+        StudyClass.objects.create(class_name=class_name, section=section)
+
+        # Redirect to a success page or any other page
+        return redirect('manage_classes')
+
+    return render(request, 'admin/class/create_study_class.html')
 
 
 # View for reading a list of study classes
-def list_study_classes(request):
+def list_classes(request):
     study_classes = StudyClass.objects.all()
-    return render(request, 'studyClass_list.html', {'study_classes': study_classes})
+    return render(request, 'admin/class/list_classes.html', {'study_classes': study_classes})
 
 
-# View for updating a study class
-def update_study_class(request, class_id):
+def detail_class(request, class_id):
+    study_class = get_object_or_404(StudyClass, pk=class_id)
+    return render(request, 'admin/class/detail_class.html', {'study_class': study_class})
+
+
+def edit_class(request, class_id):
     study_class = get_object_or_404(StudyClass, pk=class_id)
     if request.method == 'POST':
-        form = StudyClassForm(request.POST, instance=study_class)
-        if form.is_valid():
-            form.save()
-            return redirect('success_url')  # Redirect to a success page
-    else:
-        form = StudyClassForm(instance=study_class)
-    return render(request, 'studyClass_form.html', {'form': form})
+        class_name = request.POST.get('class_name')
+        section = request.POST.get('section')
+        try:
+            # Update the class object
+            study_class.class_name = class_name
+            study_class.section = section
+            study_class.save()
+            messages.success(request, 'Class updated successfully!')
+            # Redirect to detail page
+            return redirect('manage_classes')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {e}')
+    return render(request, 'admin/class/edit_class.html', {'study_class': study_class})
 
 
 # View for deleting a study class
-def delete_study_class(request, class_id):
+def delete_class(request, class_id):
     study_class = get_object_or_404(StudyClass, pk=class_id)
     if request.method == 'POST':
         study_class.delete()
-        return redirect('success_url')  # Redirect to a success page
+        return redirect('manage_classes')  # Redirect to a success page
     return render(request, 'studyClass_confirm_delete.html', {'study_class': study_class})
 
 

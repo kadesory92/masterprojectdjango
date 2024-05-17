@@ -1,0 +1,82 @@
+{% extends 'admin/master.html' %}
+
+{% block content %}
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row mt-4" id="listStudents">
+            <div class="col-md-12">
+                <div class="form-group mt-3 mb-3">
+                    <form method="GET" action="{% url 'manage_teachers' %}" class="d-flex">
+                        <input type="text" name="q" placeholder="Search..." class="form-control me-2 w-50">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-header d-flex">
+                        <div class="title">
+                            <h5 class="card-title">List of Teachers</h5>
+                        </div>
+                        <div class="createUser ms-auto">
+                            <a href="{% url 'create_user' %}" class="btn btn-primary btn-sm">Add New User</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Photo</th>
+                                    <th>Username</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Date of Birth</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in page_obj %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        {% if teacher.photo %}
+                                        <img src="{{ teacher.photo.url }}" alt="{{ teacher.user.username }}" style="max-height: 50px;">
+                                        {% else %}
+                                        No Photo
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ teacher.user.username }}</td>
+                                    <td>{{ teacher.user.first_name }}</td>
+                                    <td>{{ teacher.user.last_name }}</td>
+                                    <td>{{ teacher.date_of_birth }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                        <div>
+                          <div class="pagination justify-content-md-center">
+                            <span class="step-links">
+                              {% if page_obj.has_previous %}
+                                <a href="?page=1">&laquo; First</a>
+                                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                              {% endif %}
+
+                              <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                              </span>
+
+                              {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                              {% endif %}
+                            </span>
+                          </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
